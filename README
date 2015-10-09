@@ -1,0 +1,50 @@
+novoBreak v1.1
+!!!Only need bam files now!!!
+
+Author: Zechen Chong
+Email: zchong@mdanderson.org or chongzechen@gmail.com
+Draft date: Oct. 9, 2015
+
+Description
+===========
+novoBreak is a tool used in cancer genomic studies to discover SV (both somatic and germline)
+breakpoints. It can report accurate breakpoints of Deletions (DEL), Duplications (DUP), Inversions (INV) and
+Translocations (TRA) (you should consider some of them are mobile elements insertions or templated
+insertions). For novel insertions, we may only report the breakpoints but not the inserted
+sequence. Please forget about novel insertions at the moment. We will work on that later. It
+was designed for Illumina paired-end data.
+
+System requirements and dependency
+==================================
+novoBreak runs on a x86_64 Linux system with a ~100GB physical memory. It depends on SSAKE
+for local assembly, bwa-mem for contig mapping and samtools and picard(SamToFastq) to extract
+reads. I have already put them in the release. If you cannot run the dependencies, please download
+the lastest versions of these tools.
+
+Installation
+============
+Currenly I only release the binary version for your courtesy. You can copy the executables and
+scripts to your specific location (Your bin for example). Please also add the directory to your
+PATH.
+
+Usage
+=====
+Preprocessing: please remove adaptor contaminations (no need to trim low quality bases) before mapping raw
+              reads to the reference. For virus integration analysis, please add the virus genome(s) to reference.
+			  The integration should be a TRA event.
+Input files: a reference sequence file and two bam files (tumor and normal) of mapping results of
+			 the paired-end reads
+Output file: a filtered high confident VCF file (novoBreak.pass.flt.vcf). I left the intermedium
+             files. You can delete them or inspect them as you need.
+
+run novoBreak:
+***The shell script for easy (hopefully) run of novoBreak is in the release directory. You can tune the
+parameters as you wish.***
+
+bash <A_PATH>/novoBreak/run_novoBreak.sh <novoBreak_exe_dir> <tumor_bam> <normal_bam> <ref> <n_CUPs:INT>
+
+NEWS
+====
+20150814: Updated cluster module. Improved speed a lot. 
+20150924: Introduced multiple-core for the shell script. Further improved speed. 
+20151009: novoBreak can directly read from bam files. No raw fastq files required. Save lots of space. Should have done earlier!
