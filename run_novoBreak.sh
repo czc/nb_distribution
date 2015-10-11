@@ -20,7 +20,7 @@ $samtools sort -n somaticreads.bam somaticreads.srt
 
 mkdir group_reads
 cd group_reads
-$samtools view ../somaticreads.srt.bam | perl $nbbin/fetch_discordant.pl - $tumor_bam > discordant.sam
+$samtools view -h ../somaticreads.srt.bam | perl $nbbin/fetch_discordant.pl - $tumor_bam > discordant.sam
 java -jar $samtofq I=discordant.sam F=read1.fq F2=read2.fq
 perl $nbbin/group_bp_reads.pl ../kmer.stat read1.fq read2.fq  > bp_reads.txt
 cls=`tail -1 bp_reads.txt | cut -f1`
