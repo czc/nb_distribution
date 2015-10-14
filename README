@@ -41,7 +41,7 @@ run novoBreak:
 ***The shell script for easy (hopefully) run of novoBreak is in the release directory. You can tune the
 parameters as you wish.***
 
-bash <A_PATH>/novoBreak/run_novoBreak.sh <novoBreak_exe_dir> <tumor_bam> <normal_bam> <ref> <n_CPUs:INT>
+bash <A_PATH>/novoBreak/run_novoBreak.sh <novoBreak_exe_dir> <ref> <tumor_bam> <normal_bam> <n_CPUs:INT>
 
 NEWS
 ====
