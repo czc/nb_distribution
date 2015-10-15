@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# != 6 ]; then
-	echo $0 \<novoBreak_exe_dir\> \<ref\> \<tumor_bam\> \<normal_bam\> \<n_CPUs:INT\> \<outputdir\>
+if [ $# != 5 -a $# != 6 ]; then
+	echo $0 \<novoBreak_exe_dir\> \<ref\> \<tumor_bam\> \<normal_bam\> \<n_CPUs:INT\> \[outputdir:-PWD\]
 	exit 1
 fi
 
@@ -10,7 +10,9 @@ ref=`readlink -f $2`
 tumor_bam=`readlink -f $3`
 normal_bam=`readlink -f $4`
 n_cpus=$5
-output=`readlink -f $6`
+if [ $# == 6 ]; then
+	output=`readlink -f $6`
+fi
 novobreak=$nbbin/novoBreak
 bwa=$nbbin/bwa
 samtools=$nbbin/samtools
@@ -18,8 +20,10 @@ samtofq=$nbbin/SamToFastq.jar
 
 lastdir=`pwd`
 
-mkdir $output
-cd $output
+if [ $# == 6 ]; then
+	mkdir $output
+	cd $output
+fi
 $novobreak -i $tumor_bam -c $normal_bam -r $ref  -o kmer.stat 
 $samtools sort -n somaticreads.bam somaticreads.srt
 
