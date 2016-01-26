@@ -5,14 +5,9 @@
 use strict;
 use warnings;
 
-#my @lines = <>;
-
-#@lines = grep {!/^@/} @lines;
-
 my @slines = ();
 my @dlines = ();
 
-##INFO=<ID=MATEID,Number=1,Type=String,Description="Breakend mate">
 my $id = 0;
 print qq(##fileformat=VCFv4.1
 ##phasing=none
@@ -28,6 +23,7 @@ print qq(##fileformat=VCFv4.1
 ##INFO=<ID=GERMLINE,Number=0,Type=Flag,Description="Germline structural variant">
 ##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for END coordinate in case of a translocation">
 ##INFO=<ID=UNKNOWN_LEN,Number=0,Type=Flag,Description="Unknown the length of SV">
+##INFO=<ID=CONSENSUS,Number=1,Type=String,Description="Breakpoint consensus sequence">
 ##ALT=<ID=INV,Description="Inversion">
 ##ALT=<ID=DUP,Description="Duplication">
 ##ALT=<ID=DEL,Description="Deletion">
@@ -78,23 +74,13 @@ while (<>) {
 	if ($e[0] ne $pre) {
 		if ($pre ne "") {
 			if (@dlines >= 2) {
+				my $seq = &pick_consensus(@dlines);
 				for (my $i = 0; $i < scalar @dlines - 1; $i++) {
 					for (my $j = $i+1; $j < scalar @dlines; $j++) {
-						push @results, &parse_bp1(($dlines[$i], $dlines[$j]));
+						push @results, &parse_bp1($dlines[$i], $dlines[$j], $seq);
 					}
 				}
 			}
-=head
-			if (@dlines == 1) {
-				my $l = $dlines[0];
-				my @ee = split /\s+/, $l;
-				my $s = 0;
-				while ($ee[5] =~ /(\d+)[SH]/g) {
-					$s = $1 if $1 > $s;
-				}
-				push @slines, @dlines if $s > 20;
-			}
-=cut
 			@dlines = ();
 		} 
 		$pre = $e[0];
@@ -137,22 +123,13 @@ while (<>) {
 }
 
 if (@dlines >= 2) {
+	my $seq = &pick_consensus(@dlines);
 	for (my $i = 0; $i < scalar @dlines - 1; $i++) {
 		for (my $j = $i+1; $j < scalar @dlines; $j++) {
-			push @results, &parse_bp1(($dlines[$i], $dlines[$j]));
+			push @results, &parse_bp1($dlines[$i], $dlines[$j], $seq);
 		}
 	}
 }
-#if (@dlines == 2) {
-#	push @results, &parse_bp1(@dlines);
-#}
-=head
-if (@dlines == 1) {
-	push @slines, @dlines; 
-}
-=cut
-#push @results, &parse_ins(\@slines);
-#print @slines;
 
 @results = sort {$a->[0] cmp $b->[0] or $a->[1] <=> $b->[1]} @results;
 my $prepos = 0;
@@ -162,9 +139,19 @@ for (my $i = 0; $i < @results; $i++) {
 
 1;
 
+sub pick_consensus {
+	my @lines = @_;
+	foreach my $l (@lines) {
+		my @e = split /\s+/, $l;
+		next if $e[1] & 256;
+		return $e[9];
+	}
+}
+
 sub parse_ins {
 	my $l = shift;
 	my @lines = @$l;
+	my $seq = &pick_consensus(@lines);
 	my @bps = ();
 	my @ret = ();
 	for (my $i = 0; $i < @lines; $i++) {
@@ -211,14 +198,14 @@ sub parse_ins {
 				#print "MS", $m1, "\t", $s1, "\t", $m2, "\t", $s2, "\n";
 				if (($pre[4]=~/$m1[M].*?$s1[SH]/ and $cur[4]=~/$s2[SH].*?$m2[M]/) or ($pre[4]=~/$s1[SH].*?$m1[M]/ and $cur[4]=~/$m2[M].*?$s2[SH]/)) {
 					if (($pre[2]&16 and $cur[2]&16) or (!($pre[2]&16) and !($cur[2]&16))) { # same strand
-						#print join("\t", $cur[0], $pre[1], ".", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INS;END=$cur[1];SVLEN=".($cur[1]-$pre[1]), "GT", "./."), "\n";
-						push @ret, [ ($cur[0], $pre[1], "N", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INS;CHR2=$cur[0];END=$cur[1];UNKNOWN_LEN;SVLEN=".($cur[1]-$pre[1]), "GT", "./.", $cur[-1]) ];
+						#print join("\t", $cur[0], $pre[1], ".", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INS;END=$cur[1];SVLEN=".($cur[1]-$pre[1]), "GT", "./."), "\n";
+						push @ret, [ ($cur[0], $pre[1], "N", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INS;CHR2=$cur[0];END=$cur[1];UNKNOWN_LEN;SVLEN=".($cur[1]-$pre[1]), "GT", "./.", $cur[-1]) ];
 					}
 				}
 				if (($pre[4]=~/$m1[M].*?$s1[SH]/ and $cur[4]=~/$m2[M].*?$s2[SH]/) or ($pre[4]=~/$s1[SH].*?$m1[M]/ and $cur[4]=~/$s2[SH].*?$m2[M]/)) {
 					if (($pre[2]&16 and !($cur[2]&16)) or (!($pre[2]&16) and $cur[2]&16)) { # different strand
-						#print join("\t", $cur[0], $pre[1], ".", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INS;END=$cur[1];SVLEN=".($cur[1]-$pre[1]), "GT", "./."), "\n";
-						push @ret, [ ($cur[0], $pre[1], "N", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INS;CHR2=$cur[0];END=$cur[1];UNKNOWN_LEN;SVLEN=".($cur[1]-$pre[1]), "GT", "./.", $cur[-1]) ];
+						#print join("\t", $cur[0], $pre[1], ".", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INS;END=$cur[1];SVLEN=".($cur[1]-$pre[1]), "GT", "./."), "\n";
+						push @ret, [ ($cur[0], $pre[1], "N", ".", "<INS>", ($pre[3]+$cur[3])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INS;CHR2=$cur[0];END=$cur[1];UNKNOWN_LEN;SVLEN=".($cur[1]-$pre[1]), "GT", "./.", $cur[-1]) ];
 					}
 				}
 			} 
@@ -235,6 +222,7 @@ sub parse_ins {
 sub parse_bp1 { 
 	my $line1 = shift;
 	my $line2 = shift;
+	my $seq = shift;
 	my @ret = ();
 	my ($m1, $s1, $m2, $s2) = (0, 0, 0, 0);
 	my @e1 = split /\s+/, $line1;
@@ -270,31 +258,31 @@ sub parse_bp1 {
 			if ((($e1[1] & 0x10) ^ ($e2[1] & 0x10)) == 0) { # +,+ or -,-
 				if ($e1[1] & 0x10) { #minus
 					if ($pos1 == $e1[3]) {
-						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
+						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
 					}
 					if ($pos2 == $e2[3]) {
-						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
+						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
 					}
 				} else { #plus
 					if ($pos2 == $e2[3]) {
-						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
+						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
 					}
 					if ($pos1 == $e1[3]) {
-						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
+						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
 					}
 				}
 			} else { # +,- or -,+
 				if ($e1[1] & 0x10) {
 					if ($pos1 == $e1[3]) {
-						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
+						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
 					} else {
-						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
+						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
 					}
 				} else {
 					if ($pos1 == $e1[3]) {
-						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
+						push @ret, [ ($e2[2], $pos2, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e1[2];END=$pos1;SVLEN=0", "GT", "./.", $e2[0]) ];
 					} else {
-						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
+						push @ret, [ ($e1[2], $pos1, "N", ".", "<TRA>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=TRA;CHR2=$e2[2];END=$pos2;SVLEN=0", "GT", "./.", $e1[0]) ];
 					}
 				}
 			}
@@ -304,34 +292,34 @@ sub parse_bp1 {
 				} 
 				else {
 					if ($pos1 < $pos2) {
-						#print join("\t", $e2[2], $pos1, ".", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INV;END=$pos2;SVLEN=0", "GT", "./."), "\n";
-						push @ret, [ ($e2[2], $pos1, "N", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INV;CHR2=$e2[2];END=$pos2;SVLEN=".abs($pos2-$pos1+1), "GT", "./.",$e2[0]) ] ;
+						#print join("\t", $e2[2], $pos1, ".", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INV;END=$pos2;SVLEN=0", "GT", "./."), "\n";
+						push @ret, [ ($e2[2], $pos1, "N", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INV;CHR2=$e2[2];END=$pos2;SVLEN=".abs($pos2-$pos1+1), "GT", "./.",$e2[0]) ] ;
 					} else {
-						#print join("\t", $e2[2], $pos2, ".", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INV;END=$pos1;SVLEN=0", "GT", "./."), "\n";
-						push @ret, [ ($e2[2], $pos2, "N", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=INV;CHR2=$e2[2];END=$pos1;SVLEN=".abs($pos2-$pos1+1), "GT", "./.",$e2[0]) ];
+						#print join("\t", $e2[2], $pos2, ".", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INV;END=$pos1;SVLEN=0", "GT", "./."), "\n";
+						push @ret, [ ($e2[2], $pos2, "N", ".", "<INV>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=INV;CHR2=$e2[2];END=$pos1;SVLEN=".abs($pos2-$pos1+1), "GT", "./.",$e2[0]) ];
 					}
 				}
 			} else {
 				#print $line1, $line2;
 				if ($pos1 < $pos2) {
 					if ((!($e1[1]&16) and $e1[5]=~/$m1[M].*?$s1[SH]/) or ($e1[1]&16 and $e1[5]=~/$s1[SH].*?$m1[M]/)) { # del
-						#print join("\t", $e2[2], $pos1, ".", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DEL;END=$pos2;SVLEN=".($pos1-$pos2), "GT", "./."), "\n";
+						#print join("\t", $e2[2], $pos1, ".", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DEL;END=$pos2;SVLEN=".($pos1-$pos2), "GT", "./."), "\n";
 						if(abs($pos2 - $pos1) > 10) { # TODO magic number controling del size
-							push @ret, [ ($e2[2], $pos1, "N", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DEL;CHR2=$e2[2];END=$pos2;SVLEN=".($pos1-$pos2), "GT", "./.",$e2[0])] ;
+							push @ret, [ ($e2[2], $pos1, "N", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DEL;CHR2=$e2[2];END=$pos2;SVLEN=".($pos1-$pos2), "GT", "./.",$e2[0])] ;
 						}
 					} else { # dup
-						#print join("\t", $e2[2], $pos1, ".", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DUP;END=$pos2;SVLEN=".($pos2-$pos1), "GT", "./."), "\n";
-						push @ret, [ ($e2[2], $pos1, "N", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DUP;CHR2=$e2[2];END=$pos2;SVLEN=".($pos2-$pos1), "GT", "./.",$e2[0]) ];
+						#print join("\t", $e2[2], $pos1, ".", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DUP;END=$pos2;SVLEN=".($pos2-$pos1), "GT", "./."), "\n";
+						push @ret, [ ($e2[2], $pos1, "N", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DUP;CHR2=$e2[2];END=$pos2;SVLEN=".($pos2-$pos1), "GT", "./.",$e2[0]) ];
 					}
 				} else {
 					if ((!($e2[1]&16) and $e2[5]=~/$m2[M].*?$s2[SH]/) or ($e2[1]&16 and $e2[5]=~/$s2[SH].*?$m2[M]/)) { # del
-						#print join("\t", $e2[2], $pos2, ".", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DEL;END=$pos1;SVLEN=".($pos2-$pos1), "GT", "./."), "\n";
+						#print join("\t", $e2[2], $pos2, ".", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DEL;END=$pos1;SVLEN=".($pos2-$pos1), "GT", "./."), "\n";
 						if(abs($pos2 - $pos1) > 10) { # TODO magic number controling del size
-							push @ret, [ ($e2[2], $pos2, "N", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DEL;CHR2=$e2[2];END=$pos1;SVLEN=".($pos2-$pos1), "GT", "./.",$e2[0]) ];
+							push @ret, [ ($e2[2], $pos2, "N", ".", "<DEL>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=3to5;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DEL;CHR2=$e2[2];END=$pos1;SVLEN=".($pos2-$pos1), "GT", "./.",$e2[0]) ];
 						}
 					} else { # dup
-						#print join("\t", $e2[2], $pos2, ".", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DUP;END=$pos1;SVLEN=".($pos1-$pos2), "GT", "./."), "\n";
-						push @ret, [ ($e2[2], $pos2, "N", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;SVTYPE=DUP;CHR2=$e2[2];END=$pos1;SVLEN=".($pos1-$pos2), "GT", "./.",$e2[0]) ];
+						#print join("\t", $e2[2], $pos2, ".", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DUP;END=$pos1;SVLEN=".($pos1-$pos2), "GT", "./."), "\n";
+						push @ret, [ ($e2[2], $pos2, "N", ".", "<DUP>", ($e1[4]+$e2[4])/2, "PASS", "PRECISE;CT=5to3;CIPOS=-10,10;CIEND=-10,10;SOMATIC;CONSENSUS=$seq;SVTYPE=DUP;CHR2=$e2[2];END=$pos1;SVLEN=".($pos1-$pos2), "GT", "./.",$e2[0]) ];
 					}
 				}
 			}

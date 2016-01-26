@@ -1,9 +1,9 @@
-novoBreak v1.1
+novoBreak v1.1.1
 !!!Only need bam files now!!!
 
 Author: Zechen Chong
-Email: zchong@mdanderson.org or chongzechen@gmail.com
-Draft date: Oct. 9, 2015
+Email: zchong@mdanderson.org or kchen3@mdanderson.org
+Draft date: Jan. 26, 2016
 
 Description
 ===========
@@ -49,3 +49,4 @@ NEWS
 20150924: Introduced multiple-core for the shell script. Further improved speed. 
 20151009: novoBreak can directly read from bam files. No raw fastq files required. Save lots of space. Should have done earlier!
 20151015: Added an output redirection option
+20160126: Removed Picard's SamToFastq and changed to samtools 1.3. Added breakpoint consensus information.
