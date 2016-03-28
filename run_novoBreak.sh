@@ -24,12 +24,12 @@ if [ $# == 6 ]; then
 	cd $output
 fi
 $novobreak -i $tumor_bam -c $normal_bam -r $ref  -o kmer.stat 
-$samtools collate somaticreads.bam somaticreads.srt
+#$samtools collate somaticreads.bam somaticreads.srt
 
 mkdir group_reads
 cd group_reads
-$samtools view -h ../somaticreads.srt.bam | perl $nbbin/fetch_discordant.pl - $tumor_bam > discordant.sam
-$samtools bam2fq -1 read1.fq -2 read2.fq discordant.sam
+#$samtools view -h ../somaticreads.srt.bam | perl $nbbin/fetch_discordant.pl - $tumor_bam > discordant.sam
+$samtools bam2fq -1 read1.fq -2 read2.fq ../somaticreads.bam
 perl $nbbin/group_bp_reads.pl ../kmer.stat read1.fq read2.fq  > bp_reads.txt
 cls=`tail -1 bp_reads.txt | cut -f1`
 rec=`echo $cls/$n_cpus | bc`
