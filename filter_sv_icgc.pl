@@ -12,9 +12,10 @@ while (<>) {
 	} elsif ($e[35]>=3 and $e[36]/$e[35] < 0.1 and $e[37]>=3 and $e[38]/$e[37] < 0.1 and $e[36] <=2 and $e[38]<=2 or ($e[35]<=1 and $e[37]<=1 and $e[13]>4 and $e[21]<1 and $e[31]<1 and $e[18]>=2 and $e[28]>=2)) { # this may be a better filter for real data
 #	elsif ($e[36] <= 1 and $e[38] <= 1 and $e[23] <= 1 and $e[33] <= 1) {
 		if (/INV/) {
-			print if $len < 20000000;
+			#print if $len < 20000000;
+			print;
 		} elsif (/TRA/) {
-			print if $e[35] > 5 or $e[37] > 5;
+			print if $e[35] > 3 or $e[37] > 3;
 		} else {
 			print;
 		}

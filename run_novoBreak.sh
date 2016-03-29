@@ -52,7 +52,7 @@ cd ssake
 awk 'length($0)>1' ../group_reads/split/*.ssake.asm.out > ssake.fa
 $bwa mem -t $n_cpus -M $ref ssake.fa > ssake.sam
 perl $nbbin/infer_sv.pl ssake.sam > ssake.vcf
-grep -v INS ssake.vcf | sed 's/|/\t/g' | sed 's/read//' |  awk '{if(!x[$1$2]){y[$1$2]=$14;x[$1$2]=$0}else{if($14>y[$1$2]){y[$1$2]=$14; x[$1$2]=$0}}}END{for(i in x){print x[i]}}' | sort -k1,1 -k2,2n  | perl -ne 'if(/TRA/){print}elsif(/SVLEN=(\d+)/){if($1>100){print $_}}elsif(/SVLEN=-(\d+)/){if($1>100){print}}' > ssake.pass.vcf
+grep -v '^#' ssake.vcf | sed 's/|/\t/g' | sed 's/read//' |  awk '{if(!x[$1$2]){y[$1$2]=$14;x[$1$2]=$0}else{if($14>y[$1$2]){y[$1$2]=$14; x[$1$2]=$0}}}END{for(i in x){print x[i]}}' | sort -k1,1 -k2,2n  | perl -ne 'if(/TRA/){print}elsif(/SVLEN=(\d+)/){if($1>100){print $_}}elsif(/SVLEN=-(\d+)/){if($1>100){print}}' > ssake.pass.vcf
 #you can split the ssake.pass.vcf into multiple files to run them together
 num=`wc -l ssake.pass.vcf | cut -f1 -d' '`
 rec=`echo $num/$n_cpus | bc`
