@@ -76,7 +76,7 @@ while (<RD>) {
 				$i++;
 			}
 		} 
-		system("SSAKE -m 16 -f localreads.fa -w 1 -z 50 -o 1 -b $file.ssake.asm");
+		system("SSAKE -m 16 -f $file.localreads.fa -w 1 -z 50 -o 1 -b $file.ssake.asm");
 		#system("cap3 localreads.fa -i 30 -j 31 -o 18 -s 300 > localreads.fa.log;");
 		open OUT2, '>>', "$file.ssake.asm.out" or die $!;
 		open IN, "$file.ssake.asm.contigs" or die $!;
