@@ -70,6 +70,7 @@ cd ..
 
 ##below is a naive filter, pay attention to it
 #perl $nbbin/filter_sv_icgc.pl nbasm.pass.sp.vcf > ../novoBreak.pass.flt.vcf
-perl $nbbin/filter_sv_icgc.pl split/*.sp.vcf > ../novoBreak.pass.flt.vcf
+grep '^#' ssake.vcf > header.txt	
+perl $nbbin/filter_sv_icgc.pl split/*.sp.vcf | cat header.txt - > ../novoBreak.pass.flt.vcf
 cd ..
 cd $lastdir
