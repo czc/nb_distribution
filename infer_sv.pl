@@ -24,6 +24,7 @@ print qq(##fileformat=VCFv4.1
 ##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for END coordinate in case of a translocation">
 ##INFO=<ID=UNKNOWN_LEN,Number=0,Type=Flag,Description="Unknown the length of SV">
 ##INFO=<ID=CONSENSUS,Number=1,Type=String,Description="Breakpoint consensus sequence">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
 ##ALT=<ID=INV,Description="Inversion">
 ##ALT=<ID=DUP,Description="Duplication">
 ##ALT=<ID=DEL,Description="Deletion">

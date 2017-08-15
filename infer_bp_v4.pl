@@ -110,8 +110,14 @@ sub count_dr {
 	if ($line =~ /DUP/ or $line =~ /DEL/) {
 		if ($dup > $del + 1) {
 			$$l =~ s/DEL/DUP/g;
+			$$l =~ s/CT=3to5/CT=5to3/;
+			my $svlen = abs $1 if $$l =~ /SVLEN=(\S+)/;
+			$$l =~ s/SVLEN=(\S+)/SVLEN=$svlen/;
 		} elsif ($del > $dup + 1) {
 			$$l =~ s/DUP/DEL/g;
+			$$l =~ s/CT=5to3/CT=3to5/;
+			my $svlen = abs $1 if $$l =~ /SVLEN=(\S+)/;
+			$$l =~ s/SVLEN=(\S+)/SVLEN=-$svlen/;
 		}
 		return scalar keys %hash;
 	}
