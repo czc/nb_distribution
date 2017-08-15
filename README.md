@@ -63,7 +63,7 @@ Otherwise, please install novoBreak first
 git clone https://github.com/czc/novobreak_src.git
 cd novobreak_src && make
 ```
-**Replace novoBreak in nb_distribution with the compiled novoBreak***
+**Replace novoBreak in nb_distribution with the compiled novoBreak**
 
 
 ## Usage
