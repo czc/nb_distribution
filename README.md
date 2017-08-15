@@ -1,8 +1,10 @@
 ### novoBreak v1.1.3rc
 
 Author: Zechen Chong
-Email: zchong@mdanderson.org or kchen3@mdanderson.org
-Draft date: Apr. 12, 2016
+
+Email: chongzechen@gmail.com or kchen3@mdanderson.org
+
+Draft date: Aug. 15, 2018
 
 ## Description
 
@@ -42,8 +44,8 @@ Output file: a filtered high confident VCF file (novoBreak.pass.flt.vcf). I left
              files. You can delete them or inspect them as you need.
 
 run novoBreak:
-***The shell script for easy (hopefully) run of novoBreak is in the release directory. You can tune the
-parameters as you wish.***
+*The shell script for easy (hopefully) run of novoBreak is in the release directory. You can tune the
+parameters as you wish.*
 ```
 bash <A_PATH>/novoBreak/run_novoBreak.sh <novoBreak_exe_dir> <ref> <tumor_bam> <normal_bam> <n_CPUs:INT> [outputdir:-PWD]
 ```
@@ -59,10 +61,10 @@ regions but with a low value.
 
 ## NEWS
 
-20150814: Updated cluster module. Improved speed a lot. 
-20150924: Introduced multiple-core for the shell script. Further improved speed. 
-20151009: novoBreak can directly read from bam files. No raw fastq files required. Save lots of space. Should have done earlier!
-20151015: Added an output redirection option
-20160126: Removed Picard's SamToFastq and changed to samtools 1.3. Added breakpoint consensus information.
-20160412: Reduced memory consumption. No short reads realignments required. Fixed a few bugs.
-20160915: Added header to the final output and provided an alternative filter "filter_sv2.pl".
+* 20150814: Updated cluster module. Improved speed a lot. 
+* 20150924: Introduced multiple-core for the shell script. Further improved speed. 
+* 20151009: novoBreak can directly read from bam files. No raw fastq files required. Save lots of space. Should have done earlier!
+* 20151015: Added an output redirection option
+* 20160126: Removed Picard's SamToFastq and changed to samtools 1.3. Added breakpoint consensus information.
+* 20160412: Reduced memory consumption. No short reads realignments required. Fixed a few bugs.
+* 20160915: Added header to the final output and provided an alternative filter "filter_sv2.pl".
