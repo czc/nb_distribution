@@ -28,11 +28,13 @@ the lastest versions of these tools.
 
 ## Installation
 
-This release is the binary version for your courtesy (the source code is also availble on SourceForge). Please download and copy the
-distribution to your specific location. For example, the downloaded distribuition is novoBreak_distribution_v1.1.3.tar.gz.
-	Type 'tar zxvf novoBreak_distribution_v1.1.3.tar.gz'
+```
+git clone https://github.com/czc/nb_distribution.git
+```
 Then, please also add this directory to your PATH:
-	export PATH=$PWD/novoBreak_distribution_v1.1.3/:$PATH
+```
+	export PATH=$PWD/nb_distribution/:$PATH
+```
 
 ## Usage
 
