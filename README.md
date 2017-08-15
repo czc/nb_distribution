@@ -33,8 +33,38 @@ git clone https://github.com/czc/nb_distribution.git
 ```
 Then, please also add this directory to your PATH:
 ```
-	export PATH=$PWD/nb_distribution/:$PATH
+export PATH=$PWD/nb_distribution/:$PATH
 ```
+Type
+```
+novoBreak
+```
+You should get the following output:
+
+```
+novoBreak - a tool for discovering somatic sv breakpoints
+Auther: Zechen Chong <zchong@mdanderson.org>
+Version: 1.1 (r20151007)
+Usage:
+  novoBreak -i <tumorbam> -c <normalbam> -r <reference> -o <output.kmer> [options]
+Options:
+  -h             This help
+  -i <string>    Tumor bam file
+  -c <string>    Normal bam file
+  -r <string>    Reference file in fasta format
+  -k <int>       Kmer size, <=31 [31]
+  -o <string>    Output kmer
+  -g <int>       Output germline events [0]
+  -m <int>       Minimum kmer count regarded as novo kmers [3].
+```
+
+Otherwise, please install novoBreak first
+```
+git clone https://github.com/czc/novobreak_src.git
+cd novobreak_src && make
+```
+**Replace novoBreak in nb_distribution with the compiled novoBreak***
+
 
 ## Usage
 
@@ -70,3 +100,4 @@ regions but with a low value.
 * 20160126: Removed Picard's SamToFastq and changed to samtools 1.3. Added breakpoint consensus information.
 * 20160412: Reduced memory consumption. No short reads realignments required. Fixed a few bugs.
 * 20160915: Added header to the final output and provided an alternative filter "filter_sv2.pl".
+* 20160815: Fixed header by adding the '##END' line and fixed 'CT' values in VCF output. Thanks Xiaotong Yao!
