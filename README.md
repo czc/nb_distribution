@@ -22,7 +22,7 @@ Please cite novoBreak:
 ## System requirements and dependency
 
 novoBreak runs on a x86_64 Linux system with a ~40GB physical memory. It depends on SSAKE
-for local assembly, bwa-mem for contig mapping and samtools and picard(SamToFastq) to extract
+for local assembly, bwa-mem for contig mapping, and samtools (v1.3 and above) to extract
 reads. I have already put them in the release. If you cannot run the dependencies, please download
 the lastest versions of these tools.
 
