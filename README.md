@@ -91,6 +91,10 @@ the filter and cutoffs based on the utility and the knowledge as needed. An empi
 output. A higher value of column 6 indicates a more reliable event. But sometimes it can be real event when breakpoints fall in the repetitive
 regions but with a low value.
 
+## novoBreak workflow on Cancer Genomics Cloud of Seven Bridges
+
+Thanks for the help of the Bioinformatics team from Seven Bridges, we have optimized and released novoBreak as a public workflow (https://cgc.sbgenomics.com/public/apps#ZCHONG/novobreak-commit/novobreak-analysis/). Please feel free to use and we welcome any feedback from the users. Thanks!
+
 ## NEWS
 
 * 20150814: Updated cluster module. Improved speed a lot. 
