@@ -89,7 +89,10 @@ SVs may be false positives due to misassembly or lack of enough evidence. So we 
 filtered callset based on real data experience. We empirically defined the minimum SV size as 100 bp and no upper limit. Users can change
 the filter and cutoffs based on the utility and the knowledge as needed. An empirical filter can be made based on the column 6 of novoBreak's
 output. A higher value of column 6 indicates a more reliable event. But sometimes it can be real event when breakpoints fall in the repetitive
-regions but with a low value.
+regions but with a low value. A detailed column information of the VCF files (*.sp.vcf) before applying filter is below:
+
+Besides the standard 10 fields, the VCF file contains 29 additional fields can be used to build your own filters. These fields (column 11 to column 39) are: cluster_id, contig_id, contig_size, reads_used_for_assembly, average_coverage, tumor_bkpt1_depth, tumor_bkpt1_sp_reads, tumor_bkpt1_qual, tumor_bkpt1_high_qual_sp_reads, tumor_bkpt1_high_qual_qual, normal_bkpt1_depth, normal_bkpt1_sp_reads, normal_bkpt1_qual, normal_bkpt1_high_qual_sp_reads, normal_bkpt1_high_qual_qual, tumor_bkpt2_depth, tumor_bkpt2_sp_reads, tumor_bkpt2_qual, tumor_bkpt2_high_qual_sp_reads, tumor_bkpt2_high_qual_qual, normal_bkpt2_depth, normal_bkpt2_sp_reads, normal_bkpt2_qual, normal_bkpt2_high_qual_sp_reads, normal_bkpt2_high_qual_qual, tumor_bkpt1_discordant_reads, normal_bkpt1_discordant_reads, tumor_bkpt2_discordant_reads, normal_bkpt2_discordant_reads. Here, 'bkpt' represents 'breakpoint'; 'sp' represents 'split'; 'qual' stands for 'quality'.
+
 
 ## novoBreak workflow on Cancer Genomics Cloud of Seven Bridges
 

@@ -134,7 +134,7 @@ sub count_sp {
 	while (<$fd>) {
 		chomp;
 		my @e = split /\s+/, $_;
-		$total++ if $e[3] < $target and $e[3]+100>$target;
+		$total++ if $e[3] < $target and $e[3]+ length($e[9])>$target;
 		next if $e[1] == 4 or $e[5] !~ /[SH]/;
 		my $bp;
 		if ($e[5] =~ /(\d+)[SH].+M(\d+)[SH]/) {
