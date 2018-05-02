@@ -108,3 +108,4 @@ Thanks for the help of the Bioinformatics team from Seven Bridges, we have optim
 * 20160412: Reduced memory consumption. No short reads realignments required. Fixed a few bugs.
 * 20160915: Added header to the final output and provided an alternative filter "filter_sv2.pl".
 * 20170815: Fixed header by adding the '##END' line and fixed 'CT' values in VCF output. Thanks Xiaotong Yao!
+* 20180502: Added name sort to ensure samtools bam2fq generating the properly paired reads
