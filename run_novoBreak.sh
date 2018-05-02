@@ -29,7 +29,8 @@ $novobreak -i $tumor_bam -c $normal_bam -r $ref  -o kmer.stat
 mkdir group_reads
 cd group_reads
 #$samtools view -h ../somaticreads.srt.bam | perl $nbbin/fetch_discordant.pl - $tumor_bam > discordant.sam
-$samtools bam2fq -1 read1.fq -2 read2.fq ../somaticreads.bam
+$samtools sort -n -@ $n_cpus -o somaticreads.srtnm.bam ../somaticreads.bam
+$samtools bam2fq -1 read1.fq -2 read2.fq  somaticreads.srtnm.bam
 perl $nbbin/group_bp_reads.pl ../kmer.stat read1.fq read2.fq  > bp_reads.txt
 cls=`tail -1 bp_reads.txt | cut -f1`
 rec=`echo $cls/$n_cpus | bc`
@@ -52,7 +53,8 @@ cd ssake
 awk 'length($0)>1' ../group_reads/split/*.ssake.asm.out > ssake.fa
 $bwa mem -t $n_cpus -M $ref ssake.fa > ssake.sam
 perl $nbbin/infer_sv.pl ssake.sam > ssake.vcf
-grep -v '^#' ssake.vcf | sed 's/|/\t/g' | sed 's/read//' |  awk '{if(!x[$1$2]){y[$1$2]=$14;x[$1$2]=$0}else{if($14>y[$1$2]){y[$1$2]=$14; x[$1$2]=$0}}}END{for(i in x){print x[i]}}' | sort -k1,1 -k2,2n  | perl -ne 'if(/TRA/){print}elsif(/SVLEN=(\d+)/){if($1>100){print $_}}elsif(/SVLEN=-(\d+)/){if($1>100){print}}' > ssake.pass.vcf
+#grep -v '^#' ssake.vcf | sed 's/|/\t/g' | sed 's/read//' |  awk '{if(!x[$1$2]){y[$1$2]=$14;x[$1$2]=$0}else{if($14>y[$1$2]){y[$1$2]=$14; x[$1$2]=$0}}}END{for(i in x){print x[i]}}' | sort -k1,1 -k2,2n  | perl -ne 'if(/TRA/){print}elsif(/SVLEN=(\d+)/){if($1>100){print $_}}elsif(/SVLEN=-(\d+)/){if($1>100){print}}' > ssake.pass.vcf
+grep -v '^#' ssake.vcf | awk  -v OFS="\t" '{gsub(/\|/, "\t", $11); print}' | sed 's/read//' |  awk '{if(!x[$1$2]){y[$1$2]=$14;x[$1$2]=$0}else{if($14>y[$1$2]){y[$1$2]=$14; x[$1$2]=$0}}}END{for(i in x){print x[i]}}' | sort -k1,1 -k2,2n  | perl -ne 'if(/TRA/){print}elsif(/SVLEN=(\d+)/){if($1>100){print $_}}elsif(/SVLEN=-(\d+)/){if($1>100){print}}' > ssake.pass.vcf
 #you can split the ssake.pass.vcf into multiple files to run them together
 num=`wc -l ssake.pass.vcf | cut -f1 -d' '`
 rec=`echo $num/$n_cpus | bc`
